@@ -1,0 +1,90 @@
+
+## Overview
+This TradingView Pine Script indicator generates **Strong Buy / Strong Sell** signals using:
+- **n-Period Candle** structure (default **Length = 6**)
+- **Volume filter** (Volume > SMA of Volume)
+- **Candle strength** using Range & Body
+- **Wick-based Stop Loss** (SL placed using long wick logic)
+- **Flip detection**: if signals flip (previous direction != current direction), the script shows **NO TRADE** and ignores SL/TP display for that flip.
+
+Signal text format:
+- **STRONG BUY TF1/6.A**
+- **STRONG SELL TF1/6.A**
+- **FLIP – No Trade TF1/6.A**
+
+---
+
+## How It Works
+
+### 1) n-Period Candle (default Length = 6)
+- `m_open = open[Length-1]`
+- `m_close = close`
+- `m_high = highest(high, Length-1)`
+- `m_low  = lowest(low, Length-1)`
+
+Candle direction:
+- Bullish when `m_close > m_open`
+- Bearish when `m_close < m_open`
+
+### 2) “AI Rules” (Volume + Strength)
+A signal is considered **Strong** only if all are true:
+- **highVolume**: `volume > SMA(volume, volAvgLen)`
+- **rangeBig**: `(m_high - m_low) > SMA(range, 20)`
+- **bodyBig**: `abs(m_close - m_open) > 0.6 * range`
+
+### 3) Wick-based Stop Loss
+Stop Loss is derived from **long wick detection**:
+- Long lower wick (for Buy SL) when:
+  `lowerWick > wickFactor * body`
+- Long upper wick (for Sell SL) when:
+  `upperWick > wickFactor * body`
+
+If long wick condition is not detected, the script falls back to:
+- Buy SL = `m_low`
+- Sell SL = `m_high`
+
+### 4) Flip / No-Trade Logic
+If the signal direction flips compared with the previous non-zero signal:
+- The script prints: **FLIP – No Trade TF1/6.A**
+- SL/TP text is **not shown** for that flip bar.
+
+---
+
+## Inputs
+- **Length (n-Period)**: default `6`
+- **Volume SMA Length**: default `20`
+- **Wick Panjang = wick > faktor * body**: default `1.2`
+
+---
+
+## Display
+- **Bullish candle**: white
+- **Bearish candle**: blue
+- Labels:
+  - Strong Buy/Sell with SL + TP estimates (TP1/TP2/TP3 mapped to ~1/3/6 candle multiples)
+  - Flip shows **NO TRADE**
+
+---
+
+## Notes / Disclaimer
+- This is an indicator script for signal visualization.
+- Always validate on your own charts and manage risk appropriately.
+- Not financial advice.
+
+---
+
+## Installation (TradingView)
+1. Open TradingView
+2. Go to **Pine Editor**
+3. Create a new indicator
+4. Paste the script
+5. Save and **Add to chart**
+6. Set your chart timeframe (example: **1H**)
+
+---
+
+## Alerts (Optional)
+If you want alerts, tell me and I can add `alertcondition()` for:
+- Strong Buy TF1/6.A (non-flip)
+- Strong Sell TF1/6.A (non-flip)
+- Flip – No Trade TF1/6.A
